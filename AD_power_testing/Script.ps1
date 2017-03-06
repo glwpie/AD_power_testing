@@ -10,7 +10,8 @@ $template = get-aduser `
     -identity "CN=User Copy,CN=testUserOU" + $commaDepDomLoc `
     -properties company,MemberOf,Organization 
 
-Import-Csv $csvloc | foreach-object {
+Import-Csv $csvloc |  foreach-object {
+:confbreak {
 $name = $_.FN_custom + " " + SN
 $SamAccountName = $_.FN_custom + "." + $_.SN
 $userprinicpalname = $SamAccountName + “@adlabdom.local” 
@@ -25,7 +26,7 @@ $checkconf = Get-ADUser `
     If($checkconf.userPrincipalName == $userprincipalname) {
         cout << "There is a conflict with this AD User:"
         cout << $checkconf.distinguishedName 
-        break
+        break confbreak
     }
 New-ADUser `
  -Name $_.name `
@@ -51,3 +52,4 @@ New-ADUser `
             -server lab-svr1.adlabdom.local
         }
    }
+}   

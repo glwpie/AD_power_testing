@@ -1,11 +1,16 @@
 ﻿#
 # User Copy .ps1
 # current project = offload duplicate fields in csv
+#set Department Domain Location
+$commaDepDomLoc = ",CN=Users,DC=adlabdom,DC=local"
+# setUser csv location
+$csvloc = ".\Documents\usrecreationfile.csv"
+# Get Company, memberof, orginization of example Profile
 $template = get-aduser `
-    -identity "CN=User Copy,CN=testUserOU,CN=Users,DC=adlabdom,DC=local" `
+    -identity "CN=User Copy,CN=testUserOU" + $commaDepDomLoc `
     -properties company,MemberOf,Organization 
 
-Import-Csv .\Documents\usrecreationfile.csv | foreach-object {
+Import-Csv $csvloc | foreach-object {
 $name = $_.FN_custom + " " + SN
 $SamAccountName = $_.FN_custom + "." + $_.SN
 $userprinicpalname = $SamAccountName + “@adlabdom.local” 
@@ -13,7 +18,10 @@ $group = $_.memberOf
 $oubits =  "CN=testUserOU,CN=Users,DC=adlabdom,DC=local"
 $CN = ("Cn=" + $name + "," + $oubits)
 $manager = $_.manager + $oubits
-
+ Get-ADUser `
+    -identity $SamAccountName `
+    -properties UserPrincipalName
+    
 New-ADUser `
  -Name $_.name `
  -AccountPassword (ConvertTo-SecureString “Welcome1” -AsPlainText -force) `

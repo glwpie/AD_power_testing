@@ -29,30 +29,30 @@ $checkconf = Get-ADUser `
         break confbreak
     }
 New-ADUser `
- -Name $_.name `
- -AccountPassword (ConvertTo-SecureString “Welcome1” -AsPlainText -force) `
- -Company $template.Company `
- -Department $_.Department `
- -Description $_.description `
- -DisplayName $namename `
- -Enabled $true `
- -GivenName $CN `
- -PassThru `
- -Path $oubits `
- -samAccountName $SamAccountName `
- -Server lab-svr1.adlabdom.local `
- -Surname $_.sn `
- -Title $_.Job_title `
- -UserPrincipalName $userprinicpalname
+     -Name $_.name `
+     -AccountPassword (ConvertTo-SecureString “Welcome1” -AsPlainText -force) `
+     -Company $template.Company `
+     -Department $_.Department `
+     -Description $_.description `
+     -DisplayName $namename `
+     -Enabled $true `
+     -GivenName $CN `
+     -PassThru `
+     -Path $oubits `
+     -samAccountName $SamAccountName `
+     -Server lab-svr1.adlabdom.local `
+     -Surname $_.sn `
+     -Title $_.Job_title `
+     -UserPrincipalName $userprinicpalname
 
- foreach($group in $template.MemberOf) {
+foreach($group in $template.MemberOf) {
             $null = Add-ADGroupMember `
             -identity $group `
             -Members $CN `
             -server lab-svr1.adlabdom.local
         }
    #email setup here
-   enable-mailbox -identity $userprincipalname  -database  [-DisplayName <String>] [-DomainController <Fqdn>]
+enable-mailbox -identity $userprincipalname  -database  [-DisplayName <String>] [-DomainController <Fqdn>]
 
    }
 }   

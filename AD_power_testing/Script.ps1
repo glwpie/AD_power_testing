@@ -11,19 +11,21 @@ $SamAccountName = $_.FN_custom + "." + $_.SN
 $userprinicpalname = $SamAccountName + “@adlabdom.local” 
 $group = $_.memberOf 
 $oubits =  "CN=testUserOU,CN=Users,DC=adlabdom,DC=local"
-$addMember = ("Cn=" + $_.name + "," + $oubits)
+$CN = ("Cn=" + $name + "," + $oubits)
+$manager = $_.manager + $oubits
 
-New-ADUser -Name $_.name `
+New-ADUser `
+ -Name $_.name `
  -AccountPassword (ConvertTo-SecureString “Welcome1” -AsPlainText -force) `
  -Company $template.Company `
  -Department $_.Department `
  -Description $_.description `
- -DisplayName $_.name `
+ -DisplayName $namename `
  -Enabled $true `
- -GivenName $_.cn `
+ -GivenName $CN `
  -PassThru `
  -Path $oubits `
- -samAccountName $_.SamAccountName `
+ -samAccountName $SamAccountName `
  -Server lab-svr1.adlabdom.local `
  -Surname $_.sn `
  -Title $_.Job_title `
@@ -32,7 +34,7 @@ New-ADUser -Name $_.name `
  foreach($group in $template.MemberOf) {
             $null = Add-ADGroupMember `
             -identity $group `
-            -Members $addMember `
+            -Members $CN `
             -server lab-svr1.adlabdom.local
         }
    }

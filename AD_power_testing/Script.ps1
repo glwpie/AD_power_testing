@@ -18,10 +18,15 @@ $group = $_.memberOf
 $oubits =  "CN=testUserOU,CN=Users,DC=adlabdom,DC=local"
 $CN = ("Cn=" + $name + "," + $oubits)
 $manager = $_.manager + $oubits
- Get-ADUser `
+$checkconf = Get-ADUser `
     -identity $SamAccountName `
-    -properties UserPrincipalName
+    -properties UserPrincipalName,distinguishedName
     
+    If($checkconf.userPrincipalName == $userprincipalname) {
+        cout << "There is a conflict with this AD User:"
+        cout << $checkconf.distinguishedName 
+        break
+    }
 New-ADUser `
  -Name $_.name `
  -AccountPassword (ConvertTo-SecureString “Welcome1” -AsPlainText -force) `

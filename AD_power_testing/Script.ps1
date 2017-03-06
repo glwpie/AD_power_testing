@@ -3,10 +3,11 @@
 # current project = offload duplicate fields in csv
 $template = get-aduser `
     -identity "CN=User Copy,CN=testUserOU,CN=Users,DC=adlabdom,DC=local" `
-    -properties company,department,description,MemberOf,Organization 
+    -properties companyMemberOf,Organization 
 
-Import-Csv .\Documents\usrecreationfile.csv | foreach-object { 
-$userprinicpalname = $_.SamAccountName + “@adlabdom.local” 
+Import-Csv .\Documents\usrecreationfile.csv | foreach-object {
+$SamAccountName = $_.FN_custom + "." + $_.SN
+$userprinicpalname = $SamAccountName + “@adlabdom.local” 
 $group = $_.memberOf 
 $oubits =  "CN=testUserOU,CN=Users,DC=adlabdom,DC=local"
 $addMember = ("Cn=" + $_.name + "," + $oubits)

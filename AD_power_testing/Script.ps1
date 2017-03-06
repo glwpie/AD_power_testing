@@ -51,5 +51,8 @@ New-ADUser `
             -Members $CN `
             -server lab-svr1.adlabdom.local
         }
+   #email setup here
+   enable-mailbox -identity $userprincipalname  -database  [-DisplayName <String>] [-DomainController <Fqdn>]
+
    }
 }   

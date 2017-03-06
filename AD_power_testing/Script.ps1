@@ -1,6 +1,6 @@
 ﻿#
 # User Copy .ps1
-#
+# current project = offload duplicate fields in csv
 $template = get-aduser `
     -identity "CN=User Copy,CN=testUserOU,CN=Users,DC=adlabdom,DC=local" `
     -properties company,department,description,MemberOf,Organization 

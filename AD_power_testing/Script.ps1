@@ -52,7 +52,8 @@ foreach($group in $template.MemberOf) {
             -server lab-svr1.adlabdom.local
         }
    #email setup here
-enable-mailbox -identity $userprincipalname  -database  [-DisplayName <String>] [-DomainController <Fqdn>]
+enable-mailbox -identity $userprincipalname `
+  -database  [-DisplayName <String>] [-DomainController <Fqdn>]
 
    }
 }   

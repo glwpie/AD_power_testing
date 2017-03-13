@@ -2,21 +2,26 @@
 # User Copy .ps1
 # current project = offload duplicate fields in csv
 #set Department Domain Location
-$commaDepDomLoc = ",CN=Users,DC=adlabdom,DC=local"
+$commaDepDomLoc = ",CN=Departments,DC=WHPHDOM,DC=local"
+#working department OU
+$commaDepart_ou = ",CN=Telemetry"
 # setUser csv location
 $csvloc = ".\Documents\usrecreationfile.csv"
-# Get Company, memberof, orginization of example Profile
+#set Identiy for template copy
+$template_copy_id = "CN=Shun Watson" 
+# Get attribute from example Profile
 $template = get-aduser `
-    -identity "CN=User Copy,CN=testUserOU" + $commaDepDomLoc `
-    -properties company,MemberOf,Organization 
-
+    -identity $template_copy_id + $commaDepart_ou  + $commaDepDomLoc `
+    -properties company,MemberOf,Organization,description,department,title
+    
+#get csv file and start creation 
 Import-Csv $csvloc |  foreach-object {
 :confbreak {
 $name = $_.FN_custom + " " + SN
 $SamAccountName = $_.FN_custom + "." + $_.SN
-$userprinicpalname = $SamAccountName + “@adlabdom.local” 
+$userprinicpalname = $SamAccountName + "@WHPHDOM.local" 
 $group = $_.memberOf 
-$oubits =  "CN=testUserOU,CN=Users,DC=adlabdom,DC=local"
+$oubits =  $commaDepart_ou + $commaDepDomLoc
 $CN = ("Cn=" + $name + "," + $oubits)
 $manager = $_.manager + $oubits
 $checkconf = Get-ADUser `

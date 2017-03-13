@@ -4,7 +4,7 @@
 #set Department Domain Location
 $commaDepDomLoc = ",CN=Departments,DC=WHPHDOM,DC=local"
 #working department OU
-$commaDepart_ou = ",CN=Telemetry"
+$commaDepart_ou = ",OU=Telemetry"
 # setUser csv location
 $csvloc = ".\Documents\usrecreationfile.csv"
 #set Identiy for template copy

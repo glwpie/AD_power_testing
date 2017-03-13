@@ -1,58 +1,69 @@
-﻿#
+#﻿
 # User Copy .ps1
 # current project = offload duplicate fields in csv
 #set Department Domain Location
-$commaDepDomLoc = ",CN=Departments,DC=WHPHDOM,DC=local"
+$commaDepDomLoc = ",OU=Departments,DC=WHPHDOM,DC=local"
 #working department OU
-$commaDepart_ou = ",OU=Telemetry"
+$Depart_ou = "OU=Telemetry"
 # setUser csv location
-$csvloc = ".\usercreationfile.csv"
+$csvloc = ".\usercreationfile_v2.csv"
 #set Identiy for template copy
-$template_copy_id = "CN=Shun Watson" 
+$template_copy_id_comm = "CN=Shun Watson," 
+#H:/ drive setting
+$homeDir ="\\svrwhph02\Users\"
 #server variable for memberOf setting
 $server = "SVRWHPH01.whphdom.local"
 # Get attribute from example Profile
 $template = get-aduser `
-    -identity $template_copy_id + $commaDepart_ou  + $commaDepDomLoc `
-    -properties company,MemberOf,description,department,title,manager
+    -identity $template_copy_id_comm$Depart_ou$commaDepDomLoc `
+    -properties MemberOf,description,department,title,manager,homeDrive
     
 #get csv file and start creation 
 Import-Csv $csvloc |  foreach-object {
-:confbreak {
 $name = $_.FN_custom + " " + $_.SN
-$SamAccountName = $_.FN_custom + "." + $_.SN
+$SamAccountName = $_.FN_custom + '.' + $_.SN
 $userprinicpalname = $SamAccountName + "@WHPHDOM.local" 
 $group = $template.MemberOf 
-$oubits =  $commaDepart_ou + $commaDepDomLoc
-$CN = ("CN=" + $name + $oubits)
-
+$oubits =  $Depart_ou + $commaDepDomLoc
+$CN = "CN=" + $name + "," + $oubits
+$homeDirSet = $homeDir + $SamAccountName 
+$checkConfName = $SamAccountName
 $checkconf = Get-ADUser `
-    -identity $SamAccountName `
+    -Filter {sAMAccountName -eq $checkConfName} `
     -properties UserPrincipalName,distinguishedName
     
-    If($checkconf.userPrincipalName == $userprincipalname) {
+    If($checkConf-eq $Null) 
+    {"no conflict with user: $checkConfName"}
+    Else{
         "There is a conflict with this AD User:"
-        "$checkconf.distinguishedName" 
-        break confbreak
-    }
+        "$checkconf.distinguishedName"
+        }
+"$name" 
+"$SamAccountName" 
+"$userprinicpalname"  
+"$group"  
+"$oubits"
+"$CN"     
 New-ADUser `
      -Name $name `
      -AccountPassword (ConvertTo-SecureString "Welcome1" -AsPlainText -force) `
-     -Company $template.Company `
      -Department $template.Department `
-     -Description $template.description `
-     -DisplayName $namename `
+     -Description $template.Description `
+     -DisplayName $name `
      -Enabled $true `
-     -GivenName $CN `
-     -manager = $template.manager `
+     -GivenName $_.FN_custom `
+     -manager $template.manager `
      -PassThru `
      -Path $oubits `
      -samAccountName $SamAccountName `
      -Server $server `
      -Surname $_.SN `
      -Title $template.title `
-     -userAccountControl = 8389120 `
-     -UserPrincipalName $userprinicpalname
+     -ChangePasswordAtLogon $true `
+     -UserPrincipalName $userprinicpalname `
+     -homeDrive $template.homedrive `
+     -homeDirectory $homeDirSet `
+     -Debug
      
 
 foreach($group in $template.MemberOf) {
@@ -65,5 +76,5 @@ foreach($group in $template.MemberOf) {
 #enable-mailbox -identity $userprincipalname `
 #  -database  [-DisplayName <String>] [-DomainController <Fqdn>]
 
-   }
+   
 }   

@@ -1,49 +1,59 @@
-#﻿
+#
 # User Copy .ps1
-# current project = offload duplicate fields in csv
+# check variables for user copy
 #set Department Domain Location
 $commaDepDomLoc = ",OU=Departments,DC=WHPHDOM,DC=local"
 #working department OU
 $Depart_ou = "OU=Telemetry"
 # setUser csv location
 $csvloc = ".\usercreationfile_v2.csv"
-#set Identiy for template copy
+#set Identiy for template copy with comma
 $template_copy_id_comm = "CN=Shun Watson," 
 #H:/ drive setting
-$homeDir ="\\svrwhph02\Users\"
+$homeDir = "\\svrwhph02\Users\"
+$driveH = "H:"
 #server variable for memberOf setting
 $server = "SVRWHPH01.whphdom.local"
-# Get attribute from example Profile
+
+# Get attributes from example Profile 
+#Pulls ADUser to use as example for MemberOf,description,department,title,manager
 $template = get-aduser `
     -identity $template_copy_id_comm$Depart_ou$commaDepDomLoc `
-    -properties MemberOf,description,department,title,manager,homeDrive
+    -properties MemberOf,description,department,title,manager
     
 #get csv file and start creation 
-Import-Csv $csvloc |  foreach-object {
+#all you need in CSV is First Name, Sur Name
+#will break out and go to next user if user conflict is found 
+Import-Csv $csvloc |  :userConflict foreach-object {
+#Define per user variables
+#creates Full name
 $name = $_.FN_custom + " " + $_.SN
+#first name DOT last name 
 $SamAccountName = $_.FN_custom + '.' + $_.SN
+#userPrincipalName is unique value, used for logon ID 
 $userprinicpalname = $SamAccountName + "@WHPHDOM.local" 
-$group = $template.MemberOf 
+#Group array used for add-adGroupMember
+$group = $template.MemberOf
+#sets working AD OU loction 
 $oubits =  $Depart_ou + $commaDepDomLoc
+#sets Canonical Name, is always unique
 $CN = "CN=" + $name + "," + $oubits
-$homeDirSet = $homeDir + $SamAccountName 
+#home Dircetory folder path
+$homeDirSet = $homeDir + $SamAccountName
+#check if account to be created will conflict with user in AD
 $checkConfName = $SamAccountName
 $checkconf = Get-ADUser `
     -Filter {sAMAccountName -eq $checkConfName} `
     -properties UserPrincipalName,distinguishedName
-    
+    #if all good, continue, if conflict found, break out, go to next user in csv
     If($checkConf-eq $Null) 
     {"no conflict with user: $checkConfName"}
     Else{
         "There is a conflict with this AD User:"
-        "$checkconf.distinguishedName"
+        "$SamAccountName"
+        Break userConflict
         }
-"$name" 
-"$SamAccountName" 
-"$userprinicpalname"  
-"$group"  
-"$oubits"
-"$CN"     
+#where the magic happens     
 New-ADUser `
      -Name $name `
      -AccountPassword (ConvertTo-SecureString "Welcome1" -AsPlainText -force) `
@@ -52,6 +62,8 @@ New-ADUser `
      -DisplayName $name `
      -Enabled $true `
      -GivenName $_.FN_custom `
+     -homeDrive $driveH `
+     -homeDirectory $homeDirSet `
      -manager $template.manager `
      -PassThru `
      -Path $oubits `
@@ -61,11 +73,9 @@ New-ADUser `
      -Title $template.title `
      -ChangePasswordAtLogon $true `
      -UserPrincipalName $userprinicpalname `
-     -homeDrive $template.homedrive `
-     -homeDirectory $homeDirSet `
      -Debug
      
-
+#adds succesfully created user to all the groups from template
 foreach($group in $template.MemberOf) {
             $null = Add-ADGroupMember `
             -identity $group `
@@ -73,8 +83,5 @@ foreach($group in $template.MemberOf) {
             -server $server
         }
 #email setup here
-#enable-mailbox -identity $userprincipalname `
-#  -database  [-DisplayName <String>] [-DomainController <Fqdn>]
-
-   
+Enable-Mailbox -Identity $name -Alias $SamAccountName
 }   

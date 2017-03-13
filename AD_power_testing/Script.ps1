@@ -24,7 +24,7 @@ $SamAccountName = $_.FN_custom + "." + $_.SN
 $userprinicpalname = $SamAccountName + "@WHPHDOM.local" 
 $group = $template.MemberOf 
 $oubits =  $commaDepart_ou + $commaDepDomLoc
-$CN = ("Cn=" + $name + $oubits)
+$CN = ("CN=" + $name + $oubits)
 
 $checkconf = Get-ADUser `
     -identity $SamAccountName `

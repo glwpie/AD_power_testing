@@ -14,17 +14,17 @@ $server = "SVRWHPH01.whphdom.local"
 # Get attribute from example Profile
 $template = get-aduser `
     -identity $template_copy_id + $commaDepart_ou  + $commaDepDomLoc `
-    -properties company,MemberOf,Organization,description,department,title,manager
+    -properties company,MemberOf,description,department,title,manager
     
 #get csv file and start creation 
 Import-Csv $csvloc |  foreach-object {
 :confbreak {
-$name = $_.FN_custom + " " + SN
+$name = $_.FN_custom + " " + $_.SN
 $SamAccountName = $_.FN_custom + "." + $_.SN
 $userprinicpalname = $SamAccountName + "@WHPHDOM.local" 
 $group = $template.MemberOf 
 $oubits =  $commaDepart_ou + $commaDepDomLoc
-$CN = ("Cn=" + $name + "," + $oubits)
+$CN = ("Cn=" + $name + $oubits)
 
 $checkconf = Get-ADUser `
     -identity $SamAccountName `
@@ -36,11 +36,11 @@ $checkconf = Get-ADUser `
         break confbreak
     }
 New-ADUser `
-     -Name $_.name `
+     -Name $name `
      -AccountPassword (ConvertTo-SecureString "Welcome1" -AsPlainText -force) `
      -Company $template.Company `
-     -Department $_.Department `
-     -Description $_.description `
+     -Department $template.Department `
+     -Description $template.description `
      -DisplayName $namename `
      -Enabled $true `
      -GivenName $CN `
@@ -48,9 +48,9 @@ New-ADUser `
      -PassThru `
      -Path $oubits `
      -samAccountName $SamAccountName `
-     -Server lab-svr1.adlabdom.local `
-     -Surname $_.sn `
-     -Title $_.Job_title `
+     -Server $server `
+     -Surname $_.SN `
+     -Title $template.title `
      -userAccountControl = 8389120 `
      -UserPrincipalName $userprinicpalname
      

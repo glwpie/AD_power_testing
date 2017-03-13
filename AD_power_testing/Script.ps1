@@ -9,10 +9,12 @@ $commaDepart_ou = ",CN=Telemetry"
 $csvloc = ".\Documents\usrecreationfile.csv"
 #set Identiy for template copy
 $template_copy_id = "CN=Shun Watson" 
+#server variable for memberOf setting
+$server = "SVRWHPH01.whphdom.local"
 # Get attribute from example Profile
 $template = get-aduser `
     -identity $template_copy_id + $commaDepart_ou  + $commaDepDomLoc `
-    -properties company,MemberOf,Organization,description,department,title
+    -properties company,MemberOf,Organization,description,department,title,manager
     
 #get csv file and start creation 
 Import-Csv $csvloc |  foreach-object {
@@ -23,7 +25,7 @@ $userprinicpalname = $SamAccountName + "@WHPHDOM.local"
 $group = $_.memberOf 
 $oubits =  $commaDepart_ou + $commaDepDomLoc
 $CN = ("Cn=" + $name + "," + $oubits)
-$manager = $_.manager + $oubits
+
 $checkconf = Get-ADUser `
     -identity $SamAccountName `
     -properties UserPrincipalName,distinguishedName
@@ -35,28 +37,31 @@ $checkconf = Get-ADUser `
     }
 New-ADUser `
      -Name $_.name `
-     -AccountPassword (ConvertTo-SecureString “Welcome1” -AsPlainText -force) `
+     -AccountPassword (ConvertTo-SecureString "Welcome1" -AsPlainText -force) `
      -Company $template.Company `
      -Department $_.Department `
      -Description $_.description `
      -DisplayName $namename `
      -Enabled $true `
      -GivenName $CN `
+     -manager = $template.manager `
      -PassThru `
      -Path $oubits `
      -samAccountName $SamAccountName `
      -Server lab-svr1.adlabdom.local `
      -Surname $_.sn `
      -Title $_.Job_title `
+     -userAccountControl = 8389120 `
      -UserPrincipalName $userprinicpalname
+     
 
 foreach($group in $template.MemberOf) {
             $null = Add-ADGroupMember `
             -identity $group `
             -Members $CN `
-            -server lab-svr1.adlabdom.local
+            -server $server
         }
-   #email setup here
+#email setup here
 #enable-mailbox -identity $userprincipalname `
 #  -database  [-DisplayName <String>] [-DomainController <Fqdn>]
 

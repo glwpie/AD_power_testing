@@ -6,7 +6,7 @@ $commaDepDomLoc = ",CN=Departments,DC=WHPHDOM,DC=local"
 #working department OU
 $commaDepart_ou = ",OU=Telemetry"
 # setUser csv location
-$csvloc = ".\Documents\usrecreationfile.csv"
+$csvloc = ".\usercreationfile.csv"
 #set Identiy for template copy
 $template_copy_id = "CN=Shun Watson" 
 #server variable for memberOf setting
@@ -31,8 +31,8 @@ $checkconf = Get-ADUser `
     -properties UserPrincipalName,distinguishedName
     
     If($checkconf.userPrincipalName == $userprincipalname) {
-        cout << "There is a conflict with this AD User:"
-        cout << $checkconf.distinguishedName 
+        "There is a conflict with this AD User:"
+        "$checkconf.distinguishedName" 
         break confbreak
     }
 New-ADUser `

@@ -22,7 +22,7 @@ Import-Csv $csvloc |  foreach-object {
 $name = $_.FN_custom + " " + SN
 $SamAccountName = $_.FN_custom + "." + $_.SN
 $userprinicpalname = $SamAccountName + "@WHPHDOM.local" 
-$group = $_.memberOf 
+$group = $template.MemberOf 
 $oubits =  $commaDepart_ou + $commaDepDomLoc
 $CN = ("Cn=" + $name + "," + $oubits)
 

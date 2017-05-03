@@ -24,7 +24,9 @@ $template = get-aduser `
 #get csv file and start creation 
 #all you need in CSV is First Name, Sur Name
 #will break out and go to next user if user conflict is found 
-Import-Csv $csvloc |  foreach-object {
+Import-Csv $csvloc | foreach-object {
+#break out to here if confilct
+:confbreak {
 #Define per user variables
 #creates Full name
 $name = $_.FN_custom + " " + $_.SN
@@ -51,7 +53,8 @@ $checkconf = Get-ADUser `
     Else{
         "There is a conflict with this AD User:"
         "$SamAccountName"
-        Break 
+        #break out to :confbreak
+        Break confbreak
         }
 #where the magic happens     
 New-ADUser `
@@ -85,3 +88,4 @@ foreach($group in $template.MemberOf) {
 #email setup here
 #Enable-Mailbox -Identity $name -Alias $SamAccountName
 }   
+}

@@ -1,22 +1,35 @@
 ﻿#
 # User Copy .ps1
-# current project = offload duplicate fields in csv
+# current project = more values
+#
+# crap load of values 
+#
+#set domain name 
+$domainName = "testdomain"
 #set Department Domain Location
-$commaDepDomLoc = ",CN=Users,DC=adlabdom,DC=local"
+$commaDepDomLoc = ",CN=Users,DC=" + $domainName + ",DC=local"
+#set user OU
+$oubits =  "CN=testUserOU" + $commaDepDomLoc
 # setUser csv location
 $csvloc = ".\Documents\usrecreationfile.csv"
+#set identity 
+$userCopyCN = "CN= user to copy from,"
+#set Identity
+$setIdentity = $userCopyCN + $oubits
+#set server
+$server = "server ip here"
+
 # Get Company, memberof, orginization of example Profile
 $template = get-aduser `
-    -identity "CN=User Copy,CN=testUserOU" + $commaDepDomLoc `
+    -identity $setIdentity `
     -properties company,MemberOf,Organization 
 
 Import-Csv $csvloc |  foreach-object {
 :confbreak {
 $name = $_.FN_custom + " " + SN
 $SamAccountName = $_.FN_custom + "." + $_.SN
-$userprinicpalname = $SamAccountName + “@adlabdom.local” 
+$userprinicpalname = $SamAccountName + “@" + $domain_name + ".local” 
 $group = $_.memberOf 
-$oubits =  "CN=testUserOU,CN=Users,DC=adlabdom,DC=local"
 $CN = ("Cn=" + $name + "," + $oubits)
 $manager = $_.manager + $oubits
 $checkconf = Get-ADUser `
@@ -40,7 +53,7 @@ New-ADUser `
      -PassThru `
      -Path $oubits `
      -samAccountName $SamAccountName `
-     -Server lab-svr1.adlabdom.local `
+     -Server $server `
      -Surname $_.sn `
      -Title $_.Job_title `
      -UserPrincipalName $userprinicpalname
@@ -49,11 +62,11 @@ foreach($group in $template.MemberOf) {
             $null = Add-ADGroupMember `
             -identity $group `
             -Members $CN `
-            -server lab-svr1.adlabdom.local
+            -server $server
         }
-   #email setup here
-#enable-mailbox -identity $userprincipalname `
-#  -database  [-DisplayName <String>] [-DomainController <Fqdn>]
+#   email setup here
+enable-mailbox -identity $userprincipalname `
+  -database  [-DisplayName <String>] [-DomainController <Fqdn>]
 
    }
 }   

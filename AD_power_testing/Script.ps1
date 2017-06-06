@@ -33,6 +33,7 @@ $userprinicpalname = $SamAccountName + “@" + $domain_name + ".local”
 $group = $_.memberOf 
 $CN = ("Cn=" + $name + "," + $oubits)
 $manager = $_.manager + $oubits
+
 #check for conflicts
 $checkconf = Get-ADUser `
     -identity $SamAccountName `
@@ -43,6 +44,7 @@ $checkconf = Get-ADUser `
         cout << $checkconf.distinguishedName 
         break confbreak
     }
+
 #actually add user to AD
 New-ADUser `
      -Name $_.name `
@@ -56,20 +58,21 @@ New-ADUser `
      -PassThru `
      -Path $oubits `
      -samAccountName $SamAccountName `
-     -Server lab-svr1.adlabdom.local `
+     -Server $server `
      -Surname $_.sn `
      -Title $_.Job_title `
      -UserPrincipalName $userprinicpalname
+
 #adds user to security groups and distrobution groups
 foreach($group in $template.MemberOf) {
             $null = Add-ADGroupMember `
             -identity $group `
             -Members $CN `
-            -server lab-svr1.adlabdom.local
+            -server $server
         }
+
 #   email setup here
 enable-mailbox -identity $userprincipalname `
   -database  [-DisplayName <String>] [-DomainController <Fqdn>]
-
-   }
+     }
 }   

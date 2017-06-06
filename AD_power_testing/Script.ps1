@@ -24,6 +24,7 @@ $template = get-aduser `
     -identity $setIdentity `
     -properties company,MemberOf,Organization 
 
+# Where most of the magic happens
 Import-Csv $csvloc |  foreach-object {
 :confbreak {
 $name = $_.FN_custom + " " + SN
@@ -32,6 +33,7 @@ $userprinicpalname = $SamAccountName + “@" + $domain_name + ".local”
 $group = $_.memberOf 
 $CN = ("Cn=" + $name + "," + $oubits)
 $manager = $_.manager + $oubits
+#check for conflicts
 $checkconf = Get-ADUser `
     -identity $SamAccountName `
     -properties UserPrincipalName,distinguishedName
@@ -41,6 +43,7 @@ $checkconf = Get-ADUser `
         cout << $checkconf.distinguishedName 
         break confbreak
     }
+#actually add user to AD
 New-ADUser `
      -Name $_.name `
      -AccountPassword (ConvertTo-SecureString “Welcome1” -AsPlainText -force) `
@@ -57,7 +60,7 @@ New-ADUser `
      -Surname $_.sn `
      -Title $_.Job_title `
      -UserPrincipalName $userprinicpalname
-
+#adds user to security groups and distrobution groups
 foreach($group in $template.MemberOf) {
             $null = Add-ADGroupMember `
             -identity $group `

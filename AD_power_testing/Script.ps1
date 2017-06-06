@@ -1,4 +1,4 @@
-Ôªø#
+#
 # User Copy .ps1
 # current project = more values
 #
@@ -28,7 +28,7 @@ Import-Csv $csvloc |  foreach-object {
 :confbreak {
 $name = $_.FN_custom + " " + SN
 $SamAccountName = $_.FN_custom + "." + $_.SN
-$userprinicpalname = $SamAccountName + ‚Äú@" + $domain_name + ".local‚Äù 
+$userprinicpalname = $SamAccountName + ì@" + $domain_name + ".localî 
 $group = $_.memberOf 
 $CN = ("Cn=" + $name + "," + $oubits)
 $manager = $_.manager + $oubits
@@ -43,7 +43,7 @@ $checkconf = Get-ADUser `
     }
 New-ADUser `
      -Name $_.name `
-     -AccountPassword (ConvertTo-SecureString ‚ÄúWelcome1‚Äù -AsPlainText -force) `
+     -AccountPassword (ConvertTo-SecureString ìWelcome1î -AsPlainText -force) `
      -Company $template.Company `
      -Department $_.Department `
      -Description $_.description `
@@ -53,7 +53,7 @@ New-ADUser `
      -PassThru `
      -Path $oubits `
      -samAccountName $SamAccountName `
-     -Server $server `
+     -Server lab-svr1.adlabdom.local `
      -Surname $_.sn `
      -Title $_.Job_title `
      -UserPrincipalName $userprinicpalname
@@ -62,7 +62,7 @@ foreach($group in $template.MemberOf) {
             $null = Add-ADGroupMember `
             -identity $group `
             -Members $CN `
-            -server $server
+            -server lab-svr1.adlabdom.local
         }
 #   email setup here
 enable-mailbox -identity $userprincipalname `
